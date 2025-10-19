@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# File Integrity Monitoring Script
+# Purpose: Compare a file's current SHA-256 hash to a saved baseline and log the result.
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# === Config (absolute paths recommended) ===
+TARGET_FILE="/home/user/important.txt"
+HASH_FILE="/home/user/baseline.hash"
+LOG_FILE="/home/user/integrity_log.txt"
+
+timestamp() { date "+%Y-%m-%d %H:%M:%S %Z"; }
+
+log() { 
+  echo "$(timestamp): $1" >> "$LOG_FILE"
+}
+
+# --- Safety checks ---
+if [[ ! -f "$TARGET_FILE" ]]; then
+  log "ERROR - Target file not found: $TARGET_FILE"
+  exit 1
+fi
+
+# If baseline doesn't exist yet, create it once
+if [[ ! -f "$HASH_FILE" ]]; then
+  /usr/bin/sha256sum "$TARGET_FILE" > "$HASH_FILE"
+  log "INIT - Baseline created at $HASH_FILE"
+  exit 0
+fi
+
+# Calculate current vs original hashes (1st column of sha256sum output)
+CURRENT_HASH=$(/usr/bin/sha256sum "$TARGET_FILE" | awk '{print $1}')
+ORIGINAL_HASH=$(awk '{print $1}' "$HASH_FILE")
+
+if [[ "$CURRENT_HASH" == "$ORIGINAL_HASH" ]]; then
+  log "OK - No change detected."
+else
+  log "WARNING - $TARGET_FILE has been modified!"
+fi
