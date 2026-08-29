@@ -188,7 +188,3 @@ On the next run (scheduled or manual), the script detects the mismatch and logs 
 
 **Luis Vega**
 [GitHub](https://github.com/Luisv-Cyber)
-
-## 📄 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
